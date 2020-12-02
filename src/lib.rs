@@ -1,5 +1,5 @@
 use num_traits::{one, zero, PrimInt, Zero};
-use std::ops::Range;
+use std::{fmt::Debug, ops::Range};
 use std::{marker::PhantomData, ops::Sub};
 
 #[inline(always)]
@@ -20,9 +20,9 @@ pub struct Randge<T> {
     _t: PhantomData<T>,
 }
 
-impl<T: PrimInt> Randge<T> {
+impl<T: PrimInt + Debug> Randge<T> {
     #[inline]
-    pub fn new(min: T, max: T, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> {
+    pub fn new(min: T, max: T, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> + Debug {
         let (min, max) = (min.min(max), min.max(max));
         let size = abs(max - min);
         if size.is_zero() {
@@ -37,18 +37,28 @@ impl<T: PrimInt> Randge<T> {
         RandgeIter {
             len: size.min(n),
             max,
-            tree: Ranges::new(min, max),
+            vec: Ranges::new(min, max),
             rand,
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 struct RandgeIter<T, F> {
     len: T,
     max: T,
-    tree: Ranges<T>,
+    vec: Ranges<T>,
     rand: F,
+}
+
+impl<T: Debug, F> Debug for RandgeIter<T, F> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Randge")
+            .field("len", &self.len)
+            .field("max", &self.max)
+            .field("vec", &self.vec)
+            .finish()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -125,7 +135,7 @@ where
         if rand >= self.max {
             panic!("Random number out of range")
         }
-        let num = self.tree.take(rand);
+        let num = self.vec.take(rand);
         self.move_next();
         Some(num)
     }
@@ -142,5 +152,15 @@ mod test {
         let v = Randge::new(0, 10, 5, |max| rng.gen_range(0, max));
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
+    }
+
+    #[test]
+    fn test_2() {
+        let mut rng = thread_rng();
+        let mut v = Randge::new(0, 105, 100, |max| rng.gen_range(0, max));
+        let v2: Vec<_> = (&mut v).collect();
+        println!("{:?}", v);
+        println!("");
+        println!("{:?}", v2);
     }
 }
