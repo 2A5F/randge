@@ -82,7 +82,35 @@ where
 {
     #[inline]
     pub fn take(&mut self, mut num: T) -> T {
-        todo!()
+        num = num + self.0[0].start - zero();
+        for i in 0..self.0.len() {
+            let v = unsafe { self.0.get_unchecked_mut(i) };
+            let end = v.end;
+            assert!(num >= v.start);
+            if num == v.start {
+                v.start = v.start + one();
+                if v.start == end {
+                    self.0.remove(i);
+                }
+                return num;
+            } else if num == end {
+                v.end = v.end - one();
+                return num;
+            } else if num < end {
+                let r = num + one()..end;
+                v.end = num - one();
+                if v.end <= v.start {
+                    *v = r;
+                } else {
+                    self.0.insert(i + 1, r);
+                }
+                return num;
+            } else {
+                num = num + self.0[i + 1].start - end;
+                continue;
+            }
+        }
+        panic!("not find")
     }
 }
 
