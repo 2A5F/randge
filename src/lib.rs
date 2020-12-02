@@ -1,49 +1,37 @@
-use num_traits::{one, zero, PrimInt, Signed, Unsigned, Zero};
-use std::marker::PhantomData;
+use num_traits::{one, zero, PrimInt, Zero};
 use std::ops::Range;
+use std::{marker::PhantomData, ops::Sub};
+
+#[inline(always)]
+fn abs<T: Zero + PartialOrd + Sub<Output = T>>(v: T) -> T {
+    if v < zero() {
+        zero::<T>() - v
+    } else {
+        v
+    }
+}
+
+#[inline(always)]
+fn is_negative<T: Zero + PartialOrd>(v: T) -> bool {
+    v < zero()
+}
 
 pub struct Randge<T> {
     _t: PhantomData<T>,
 }
 
-impl<T> Randge<T>
-where
-    T: PrimInt + Signed,
-{
+impl<T: PrimInt> Randge<T> {
     #[inline]
-    pub fn int(min: T, max: T, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> {
+    pub fn new(min: T, max: T, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> {
         let (min, max) = (min.min(max), min.max(max));
-        let size = (max - min).abs();
+        let size = abs(max - min);
         if size.is_zero() {
             panic!("Range cannot be 0")
         }
-        if n.is_negative() {
+        if is_negative(n) {
             panic!("n must be >= 0")
         }
         if size < n {
-            panic!("The required count is greater than the allowed range")
-        }
-        RandgeIter {
-            len: size.min(n),
-            max,
-            tree: Ranges::new(min, max),
-            rand,
-        }
-    }
-}
-
-impl<T> Randge<T>
-where
-    T: PrimInt + Unsigned,
-{
-    #[inline]
-    pub fn uint(min: T, max: T, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> {
-        let (min, max) = (min.min(max), min.max(max));
-        let size = max - min;
-        if size.is_zero() {
-            panic!("Range cannot be 0")
-        }
-        if size > n {
             panic!("The required count is greater than the allowed range")
         }
         RandgeIter {
@@ -85,32 +73,30 @@ where
         num = num + self.0[0].start - zero();
         for i in 0..self.0.len() {
             let v = unsafe { self.0.get_unchecked_mut(i) };
+            let start = v.start;
+            debug_assert!(num >= start);
             let end = v.end;
-            assert!(num >= v.start);
-            if num == v.start {
-                v.start = v.start + one();
-                if v.start == end {
-                    self.0.remove(i);
-                }
-                return num;
-            } else if num == end {
-                v.end = v.end - one();
-                return num;
-            } else if num < end {
-                let r = num + one()..end;
-                v.end = num - one();
-                if v.end <= v.start {
-                    *v = r;
-                } else {
-                    self.0.insert(i + 1, r);
-                }
-                return num;
-            } else {
+            if num >= end {
                 num = num + self.0[i + 1].start - end;
                 continue;
             }
+            let nstart = num + one();
+            let nend = num;
+            if nstart == end {
+                if nend == start {
+                    self.0.remove(i);
+                } else {
+                    v.end = nend;
+                }
+            } else {
+                v.start = nstart;
+                if nend != start {
+                    self.0.insert(i, start..nend);
+                }
+            }
+            return num;
         }
-        panic!("not find")
+        panic!("never")
     }
 }
 
@@ -136,6 +122,9 @@ where
             return None;
         }
         let rand = (self.rand)(self.max);
+        if rand >= self.max {
+            panic!("Random number out of range")
+        }
         let num = self.tree.take(rand);
         self.move_next();
         Some(num)
@@ -149,16 +138,8 @@ mod test {
 
     #[test]
     fn test() {
-        let mut items = [9, 7, 1, 5, 0].iter();
         let mut rng = thread_rng();
-        let v = Randge::int(0, 10, 5, |max| {
-            // let r = rng.gen_range(0, max);
-            // println!("{}", r);
-            // r
-            //max
-            //*items.next().unwrap()
-            0
-        });
+        let v = Randge::new(0, 10, 5, |max| rng.gen_range(0, max));
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }
