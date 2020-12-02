@@ -1,19 +1,48 @@
+mod linear;
+mod tree;
+mod utils;
+use linear::*;
 use num_traits::{one, zero, PrimInt, Zero};
 use std::{fmt::Debug, ops::Range};
 use std::{marker::PhantomData, ops::Sub};
+use tree::*;
+use utils::*;
 
-#[inline(always)]
-fn abs<T: Zero + PartialOrd + Sub<Output = T>>(v: T) -> T {
-    if v < zero() {
-        zero::<T>() - v
-    } else {
-        v
+pub trait FnRand<T> {
+    fn rand(&mut self, range: Range<T>) -> T;
+}
+impl<T, F: FnMut(T, T) -> T> FnRand<T> for F {
+    fn rand(&mut self, range: Range<T>) -> T {
+        self(range.start, range.end)
     }
 }
 
-#[inline(always)]
-fn is_negative<T: Zero + PartialOrd>(v: T) -> bool {
-    v < zero()
+#[cfg(feature = "rand")]
+use rand::{
+    distributions::uniform::SampleUniform,
+    rngs::{OsRng, StdRng, ThreadRng},
+    Rng,
+};
+
+#[cfg(feature = "rand")]
+impl<T: SampleUniform> FnRand<T> for ThreadRng {
+    fn rand(&mut self, range: Range<T>) -> T {
+        self.gen_range(range.start, range.end)
+    }
+}
+
+#[cfg(feature = "rand")]
+impl<T: SampleUniform> FnRand<T> for OsRng {
+    fn rand(&mut self, range: Range<T>) -> T {
+        self.gen_range(range.start, range.end)
+    }
+}
+
+#[cfg(feature = "rand")]
+impl<T: SampleUniform> FnRand<T> for StdRng {
+    fn rand(&mut self, range: Range<T>) -> T {
+        self.gen_range(range.start, range.end)
+    }
 }
 
 pub struct Randge<T> {
@@ -38,14 +67,28 @@ impl<T: PrimInt> Randge<T> {
     }
 
     #[inline]
-    pub fn new(range: Range<T>, n: T, rand: impl FnMut(T) -> T) -> impl Iterator<Item = T> {
+    pub fn new(range: Range<T>, n: T, rand: impl FnRand<T>) -> impl Iterator<Item = T> {
+        Self::vec(range, n, rand)
+    }
+
+    #[inline]
+    pub fn vec(range: Range<T>, n: T, rand: impl FnRand<T>) -> impl Iterator<Item = T> {
         let (len, size, min, max) = Self::check(range, n);
         let take = RangesVec::new(min, max);
+        RandgeIter::new(len, size, take, rand)
+    }
+
+    #[inline]
+    pub fn tree(range: Range<T>, n: T, rand: impl FnRand<T>) -> impl Iterator<Item = T> {
+        let (len, size, min, max) = Self::check(range, n);
+        let take = RangesTree::new(min, max);
         RandgeIter::new(len, size, take, rand)
     }
 }
 
 trait RandgeTake<T> {
+    fn range(&self) -> Range<T>;
+
     fn take(&mut self, num: T) -> T;
 }
 
@@ -90,7 +133,7 @@ where
     }
 }
 
-impl<T, F: FnMut(T) -> T, R: RandgeTake<T>> Iterator for RandgeIter<T, F, R>
+impl<T, F: FnRand<T>, R: RandgeTake<T>> Iterator for RandgeIter<T, F, R>
 where
     T: PrimInt,
 {
@@ -100,8 +143,9 @@ where
         if self.len.is_zero() {
             return None;
         }
-        let rand = (self.rand)(self.size);
-        if rand >= self.size {
+        let range = self.take.range();
+        let rand = self.rand.rand(range.clone());
+        if rand >= range.end || rand < range.start {
             panic!("Random number out of range")
         }
         let num = self.take.take(rand);
@@ -110,61 +154,21 @@ where
     }
 }
 
-#[derive(Debug, Clone)]
-struct RangesVec<T>(Vec<Range<T>>);
-
-impl<T> RangesVec<T> {
-    #[inline]
-    pub fn new(min: T, max: T) -> Self {
-        Self(vec![min..max])
-    }
-}
-
-impl<T> RandgeTake<T> for RangesVec<T>
-where
-    T: PrimInt,
-{
-    #[inline]
-    fn take(&mut self, mut num: T) -> T {
-        num = num + self.0[0].start - zero();
-        for i in 0..self.0.len() {
-            let v = unsafe { self.0.get_unchecked_mut(i) };
-            let start = v.start;
-            debug_assert!(num >= start);
-            let end = v.end;
-            if num >= end {
-                num = num + self.0[i + 1].start - end;
-                continue;
-            }
-            let nstart = num + one();
-            let nend = num;
-            if nstart == end {
-                if nend == start {
-                    self.0.remove(i);
-                } else {
-                    v.end = nend;
-                }
-            } else {
-                v.start = nstart;
-                if nend != start {
-                    self.0.insert(i, start..nend);
-                }
-            }
-            return num;
-        }
-        panic!("never")
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::*;
-    use rand::{thread_rng, Rng};
+    use rand::thread_rng;
 
     #[test]
-    fn test() {
-        let mut rng = thread_rng();
-        let v = Randge::new(0..10, 5, |max| rng.gen_range(0, max));
+    fn test_vec() {
+        let v = Randge::vec(0..10, 5, thread_rng());
+        let v: Vec<_> = v.collect();
+        println!("{:?}", v);
+    }
+
+    #[test]
+    fn test_tree() {
+        let v = Randge::tree(0..10, 5, thread_rng());
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }
