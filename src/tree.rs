@@ -1,18 +1,26 @@
+#![allow(dead_code)]
 use crate::*;
 
 #[derive(Debug, Clone)]
-pub enum RangesTree<T> {
+pub struct RangesTree<T> {
+    tree: TheTree<T>,
+}
+
+#[derive(Debug, Clone)]
+enum TheTree<T> {
     Range(Range<T>),
     Tree {
-        l: Box<RangesTree<T>>,
-        r: Box<RangesTree<T>>,
+        l: Box<TheTree<T>>,
+        r: Box<TheTree<T>>,
     },
 }
 
 impl<T> RangesTree<T> {
     #[inline]
     pub fn new(min: T, max: T) -> Self {
-        Self::Range(min..max)
+        Self {
+            tree: TheTree::Range(min..max),
+        }
     }
 }
 
@@ -25,12 +33,12 @@ where
     }
 
     fn take(&mut self, num: T) -> T {
-        let mut this = self;
-        match this {
-            RangesTree::Range(v) => {
+        let mut tree = &mut self.tree;
+        match &mut tree {
+            TheTree::Range(v) => {
                 debug_assert!(v.start >= num && num < v.end);
             }
-            RangesTree::Tree { l, r } => {}
+            TheTree::Tree { l: _, r: _ } => {}
         }
         todo!()
     }

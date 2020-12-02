@@ -1,4 +1,5 @@
 use crate::*;
+use std::ops::Sub;
 
 #[inline(always)]
 pub fn abs<T: Zero + PartialOrd + Sub<Output = T>>(v: T) -> T {
