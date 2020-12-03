@@ -67,10 +67,12 @@ fn test() {
     let mut t = RangesLinear::new(5, 15);
     let v = t.take(6);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(9);
+    let v = t.take(7);
     println!("{}\n{:?}\n", v, t);
     let v = t.take(8);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(7);
+    let v = t.take(9);
+    println!("{}\n{:?}\n", v, t);
+    let v = t.take(10);
     println!("{}\n{:?}\n", v, t);
 }

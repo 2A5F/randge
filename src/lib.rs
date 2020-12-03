@@ -30,7 +30,7 @@ pub fn randge_linear<T: PrimInt>(
     range: Range<T>,
     n: T,
     rand: impl FnRand<T>,
-) -> impl Iterator<Item = T> {
+) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesLinear::new(min, max);
     RandgeIter::new(len, take, rand)
@@ -41,7 +41,7 @@ pub fn randge_tree<T: PrimInt>(
     range: Range<T>,
     n: T,
     rand: impl FnRand<T>,
-) -> impl Iterator<Item = T> {
+) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesTree::new(min, max);
     RandgeIter::new(len, take, rand)
@@ -49,8 +49,6 @@ pub fn randge_tree<T: PrimInt>(
 
 #[cfg(test)]
 mod test {
-    use std::vec;
-
     use super::*;
     use rand::{thread_rng, Rng};
 
