@@ -63,11 +63,14 @@ where
 
 #[test]
 fn test() {
+    println!("");
     let mut t = RangesLinear::new(5, 15);
     let v = t.take(6);
-    println!("{} {:?}", v, t);
+    println!("{}\n{:?}\n", v, t);
+    let v = t.take(9);
+    println!("{}\n{:?}\n", v, t);
+    let v = t.take(8);
+    println!("{}\n{:?}\n", v, t);
     let v = t.take(7);
-    println!("{} {:?}", v, t);
-    let v = t.take(6);
-    println!("{} {:?}", v, t);
+    println!("{}\n{:?}\n", v, t);
 }
