@@ -49,8 +49,10 @@ pub fn randge_tree<T: PrimInt>(
 
 #[cfg(test)]
 mod test {
+    use std::vec;
+
     use super::*;
-    use rand::thread_rng;
+    use rand::{thread_rng, Rng};
 
     #[test]
     fn test_vec() {
@@ -61,7 +63,12 @@ mod test {
 
     #[test]
     fn test_tree() {
-        let v = randge_tree(0..10, 5, thread_rng());
+        let mut rng = thread_rng();
+        let v = randge_tree(5..15, 5, |min, max| {
+            let r = rng.gen_range(min, max);
+            println!("{} ", r);
+            r
+        });
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }

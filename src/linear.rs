@@ -2,8 +2,8 @@ use crate::*;
 
 #[derive(Debug, Clone)]
 pub struct RangesLinear<T> {
-    rs: Vec<Range<T>>,
     size: Range<T>,
+    rs: Vec<Range<T>>,
 }
 
 impl<T> RangesLinear<T>
@@ -13,8 +13,8 @@ where
     #[inline]
     pub fn new(min: T, max: T) -> Self {
         Self {
-            rs: vec![min..max],
             size: min..max,
+            rs: vec![min..max],
         }
     }
 }
@@ -58,4 +58,16 @@ where
         }
         panic!("never")
     }
+}
+
+
+#[test]
+fn test() {
+    let mut t = RangesLinear::new(5, 15);
+    let v = t.take(6);
+    println!("{} {:?}", v, t);
+    let v = t.take(7);
+    println!("{} {:?}", v, t);
+    let v = t.take(6);
+    println!("{} {:?}", v, t);
 }
