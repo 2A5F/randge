@@ -1,12 +1,12 @@
 use crate::*;
 
 #[derive(Debug, Clone)]
-pub struct RangesVec<T> {
+pub struct RangesLinear<T> {
     rs: Vec<Range<T>>,
-    size: T,
+    size: Range<T>,
 }
 
-impl<T> RangesVec<T>
+impl<T> RangesLinear<T>
 where
     T: PrimInt,
 {
@@ -14,23 +14,23 @@ where
     pub fn new(min: T, max: T) -> Self {
         Self {
             rs: vec![min..max],
-            size: max,
+            size: min..max,
         }
     }
 }
 
-impl<T> RandgeTake<T> for RangesVec<T>
+impl<T> RandgeTake<T> for RangesLinear<T>
 where
     T: PrimInt,
 {
     fn range(&self) -> Range<T> {
-        zero()..self.size
+        self.size.clone()
     }
 
     #[inline]
     fn take(&mut self, mut num: T) -> T {
-        self.size = self.size - one();
-        num = num + self.rs[0].start - zero();
+        self.size.end = self.size.end - one();
+        num = num + self.rs[0].start - self.size.start;
         for i in 0..self.rs.len() {
             let v = unsafe { self.rs.get_unchecked_mut(i) };
             let start = v.start;

@@ -26,13 +26,13 @@ fn check<T: PrimInt>(range: Range<T>, n: T) -> (T, T, T) {
 }
 
 #[inline]
-pub fn randge_vec<T: PrimInt>(
+pub fn randge_linear<T: PrimInt>(
     range: Range<T>,
     n: T,
     rand: impl FnRand<T>,
 ) -> impl Iterator<Item = T> {
     let (len, min, max) = check(range, n);
-    let take = RangesVec::new(min, max);
+    let take = RangesLinear::new(min, max);
     RandgeIter::new(len, take, rand)
 }
 
@@ -54,7 +54,7 @@ mod test {
 
     #[test]
     fn test_vec() {
-        let v = randge_vec(0..10, 5, thread_rng());
+        let v = randge_linear(5..15, 5, thread_rng());
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }
