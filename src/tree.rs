@@ -169,14 +169,14 @@ where
                         break 'sync;
                     }
                     let parent = unsafe { &mut *tree.parent.unwrap().as_ptr() };
-                    parent.range.start = tree.range.start;
                     let pt = parent.tree.as_deref().unwrap();
+                    parent.range.start = pt.l.range.start;
                     parent.range.end = parent.range.start
                         + (pt.l.range.end - pt.l.range.start)
                         + (pt.r.range.end - pt.r.range.start);
+
                     tree = parent;
                 }
-
                 return num;
             }
 
