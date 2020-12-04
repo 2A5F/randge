@@ -52,9 +52,12 @@ where
 }
 
 #[cfg(test)]
+mod tests;
+
+#[cfg(test)]
 mod test {
     use super::*;
-    use rand::{thread_rng, Rng};
+    use rand::thread_rng;
 
     #[test]
     fn test_linear() {
@@ -65,12 +68,7 @@ mod test {
 
     #[test]
     fn test_tree() {
-        let mut rng = thread_rng();
-        let v = randge_tree(5..15, 5, |min, max| {
-            let r = rng.gen_range(min, max);
-            println!("{} ", r);
-            r
-        });
+        let v = randge_tree(5..15, 5, thread_rng());
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }
