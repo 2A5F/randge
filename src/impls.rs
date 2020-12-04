@@ -1,3 +1,4 @@
+pub use crate::barrel::*;
 pub use crate::linear::*;
 pub use crate::tree::*;
 use crate::*;

@@ -1,3 +1,4 @@
+mod barrel;
 mod fn_rand;
 pub mod impls;
 mod linear;
@@ -5,7 +6,7 @@ mod tree;
 mod utils;
 pub use fn_rand::*;
 use impls::*;
-use num_traits::{one, zero, PrimInt, Zero};
+use num_traits::{one, zero, AsPrimitive, PrimInt, Zero};
 use std::{fmt::Debug, ops::Range};
 use utils::*;
 
@@ -39,13 +40,24 @@ pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> R
     RandgeIter::new(len, take, rand)
 }
 
+#[inline]
+pub fn randge_barrel<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesBarrel<T>>
+where
+    T: AsPrimitive<usize>,
+    Range<T>: Iterator<Item = T>,
+{
+    let (len, min, max) = check(range, n);
+    let take = RangesBarrel::new(min, max);
+    RandgeIter::new(len, take, rand)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use rand::{thread_rng, Rng};
 
     #[test]
-    fn test_vec() {
+    fn test_linear() {
         let v = randge_linear(5..15, 5, thread_rng());
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
@@ -59,6 +71,13 @@ mod test {
             println!("{} ", r);
             r
         });
+        let v: Vec<_> = v.collect();
+        println!("{:?}", v);
+    }
+
+    #[test]
+    fn test_barrel() {
+        let v = randge_barrel(5..15, 5, thread_rng());
         let v: Vec<_> = v.collect();
         println!("{:?}", v);
     }
