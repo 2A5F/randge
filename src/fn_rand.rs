@@ -1,5 +1,16 @@
 use crate::*;
 
+/// Function to generate random numbers
+///
+/// ```ignore
+/// let f: impl FnRand<T> = |min, max| gen_range(min, max);
+/// ```
+/// ```ignore
+/// use rand::thread_rng;
+///
+/// let rng = thread_rng();
+/// let f: impl FnRand<T> = rng;
+/// ```
 pub trait FnRand<T> {
     fn rand(&mut self, range: Range<T>) -> T;
 }

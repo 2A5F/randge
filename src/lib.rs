@@ -1,3 +1,21 @@
+//! Generate random numbers that are not repeated in the range  
+//! 
+//! # Example
+//! 
+//! ```
+//! use rand::thread_rng;
+//! # use randge::*;
+//! 
+//! let v = randge(-15..15, 5, thread_rng());
+//! let v: Vec<_> = v.collect();
+//! # drop(v);
+//! // output: like [13, -3, -14, 5, 3]
+//! ```
+//!
+//! # Features
+//! - `rand`
+//! 
+
 mod barrel;
 mod fn_rand;
 pub mod impls;
@@ -26,6 +44,28 @@ fn check<T: PrimInt>(range: Range<T>, n: T) -> (T, T, T) {
     (size.min(n), min, max)
 }
 
+/// Alias of [`randge_tree`](fn.randge_tree.html)
+#[inline(always)]
+pub fn randge<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
+    randge_tree(range, n, rand)
+}
+
+/// Generate random numbers that are not repeated in the range  
+/// - Based on linear algorithm, the worst time complexity is `O(n)` and the best `O(1)`
+/// - Minimal memory usage
+/// - Slowest
+/// 
+/// # Example
+/// 
+/// ```
+/// use rand::thread_rng;
+/// # use randge::*;
+/// 
+/// let v = randge_linear(-15..15, 5, thread_rng());
+/// let v: Vec<_> = v.collect();
+/// # drop(v);
+/// // output: like [13, -3, -14, 5, 3]
+/// ```
 #[inline]
 pub fn randge_linear<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
     let (len, min, max) = check(range, n);
@@ -33,6 +73,21 @@ pub fn randge_linear<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) ->
     RandgeIter::new(len, take, rand)
 }
 
+/// Generate random numbers that are not repeated in the range  
+/// - Using tree-based algorithm, the time complexity is `O(logn)`
+/// - Moderate memory usage
+/// 
+/// # Example
+/// 
+/// ```
+/// use rand::thread_rng;
+/// # use randge::*;
+/// 
+/// let v = randge_tree(-15..15, 5, thread_rng());
+/// let v: Vec<_> = v.collect();
+/// # drop(v);
+/// // output: like [13, -3, -14, 5, 3]
+/// ```
 #[inline]
 pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
     let (len, min, max) = check(range, n);
@@ -40,6 +95,22 @@ pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> R
     RandgeIter::new(len, take, rand)
 }
 
+/// Generate random numbers that are not repeated in the range  
+/// - Space for time, time complexity is `O(1)`
+/// - Maximum memory usage
+/// - Fastest
+/// 
+/// # Example
+/// 
+/// ```
+/// use rand::thread_rng;
+/// # use randge::*;
+/// 
+/// let v = randge_barrel(-15..15, 5, thread_rng());
+/// let v: Vec<_> = v.collect();
+/// # drop(v);
+/// // output: like [13, -3, -14, 5, 3]
+/// ```
 #[inline]
 pub fn randge_barrel<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesBarrel<T>>
 where

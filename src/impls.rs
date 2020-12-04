@@ -1,3 +1,5 @@
+//! You don’t need to view the contents of this
+
 pub use crate::barrel::*;
 pub use crate::linear::*;
 pub use crate::tree::*;
