@@ -60,19 +60,18 @@ where
     }
 }
 
-
 #[test]
 fn test() {
     println!("");
-    let mut t = RangesLinear::new(5, 15);
-    let v = t.take(6);
+    let mut t = RangesLinear::new(5, 35);
+    let v = t.take(33);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(7);
+    let v = t.take(31);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(8);
+    let v = t.take(29);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(9);
+    let v = t.take(27);
     println!("{}\n{:?}\n", v, t);
-    let v = t.take(10);
+    let v = t.take(25);
     println!("{}\n{:?}\n", v, t);
 }

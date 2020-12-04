@@ -26,22 +26,14 @@ fn check<T: PrimInt>(range: Range<T>, n: T) -> (T, T, T) {
 }
 
 #[inline]
-pub fn randge_linear<T: PrimInt>(
-    range: Range<T>,
-    n: T,
-    rand: impl FnRand<T>,
-) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
+pub fn randge_linear<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesLinear::new(min, max);
     RandgeIter::new(len, take, rand)
 }
 
 #[inline]
-pub fn randge_tree<T: PrimInt>(
-    range: Range<T>,
-    n: T,
-    rand: impl FnRand<T>,
-) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
+pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesTree::new(min, max);
     RandgeIter::new(len, take, rand)

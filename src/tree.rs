@@ -169,11 +169,48 @@ where
                         break 'sync;
                     }
                     let parent = unsafe { &mut *tree.parent.unwrap().as_ptr() };
-                    let pt = parent.tree.as_deref().unwrap();
+
+                    let pt = parent.tree.as_deref_mut().unwrap();
+
+                    if let Some(ref t) = tree.tree {
+                        // rot r -> l
+                        if pt.l.tree.is_none() && t.r.tree.is_some() && t.l.tree.is_none() {
+                            let mut t = tree.tree.take().unwrap();
+                            let ptl = &mut pt.l;
+                            let rc = t.r.tree.take();
+
+                            tree.range = t.r.range.clone();
+
+                            t.r.range = t.l.range.clone();
+                            t.l.range = ptl.range.clone();
+
+                            ptl.range.start = t.l.range.start;
+                            ptl.range.end = t.l.range.end + t.r.range.end - t.r.range.start;
+
+                            ptl.tree = Some(t);
+                            tree.tree = rc;
+                        }
+                        // rot l -> r
+                        else if pt.r.tree.is_none() && t.l.tree.is_some() && t.r.tree.is_none() {
+                            let mut t = tree.tree.take().unwrap();
+                            let ptr = &mut pt.r;
+                            let lc = t.l.tree.take();
+
+                            tree.range = t.l.range.clone();
+
+                            t.l.range = t.r.range.clone();
+                            t.r.range = ptr.range.clone();
+
+                            ptr.range.start = t.l.range.start;
+                            ptr.range.end = t.l.range.end + t.r.range.end - t.r.range.start;
+
+                            ptr.tree = Some(t);
+                            tree.tree = lc;
+                        }
+                    }
+
                     parent.range.start = pt.l.range.start;
-                    parent.range.end = parent.range.start
-                        + (pt.l.range.end - pt.l.range.start)
-                        + (pt.r.range.end - pt.r.range.start);
+                    parent.range.end = pt.l.range.end + pt.r.range.end - pt.r.range.start;
 
                     tree = parent;
                 }
@@ -204,15 +241,15 @@ where
 #[test]
 fn test() {
     println!("");
-    let mut t = RangesTree::new(5, 15);
-    let v = t.take(6);
+    let mut t = RangesTree::new(5, 35);
+    let v = t.take(33);
     println!("{}\n{}\n", v, t);
-    let v = t.take(7);
+    let v = t.take(31);
     println!("{}\n{}\n", v, t);
-    let v = t.take(8);
+    let v = t.take(29);
     println!("{}\n{}\n", v, t);
-    let v = t.take(9);
+    let v = t.take(27);
     println!("{}\n{}\n", v, t);
-    let v = t.take(10);
+    let v = t.take(25);
     println!("{}\n{}\n", v, t);
 }

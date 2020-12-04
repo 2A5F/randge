@@ -24,10 +24,7 @@ impl<T, F, R> RandgeIter<T, F, R> {
 
 impl<T: Debug, F, R: RandgeTake<T> + Debug> Debug for RandgeIter<T, F, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Randge")
-            .field("len", &self.len)
-            .field("take", &self.take)
-            .finish()
+        f.debug_struct("Randge").field("len", &self.len).field("take", &self.take).finish()
     }
 }
 
