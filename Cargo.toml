@@ -1,8 +1,13 @@
 [package]
 name = "randge"
-version = "0.1.0"
-authors = ["2a5f <u2a5f@outlook.com>"]
+version = "1.0.0"
+description = "Generate unique random numbers"
+authors = ["2A5F <u2a5f@outlook.com>"]
 edition = "2018"
+repository = "https://github.com/2A5F/randge"
+license = "MIT"
+keywords = ["random", "unique", "range", "no-repetition"]
+categories = ["algorithms", "rust-patterns"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
