@@ -2,6 +2,8 @@ use crate::*;
 
 /// Function to generate random numbers
 ///
+/// for fn need return a random number >= min && < max
+///
 /// ```ignore
 /// let f: impl FnRand<T> = |min, max| gen_range(min, max);
 /// ```

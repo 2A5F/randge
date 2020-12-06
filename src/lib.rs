@@ -29,7 +29,7 @@ use std::{fmt::Debug, ops::Range};
 use utils::*;
 
 #[inline(always)]
-fn check<T: PrimInt>(range: Range<T>, n: T) -> (T, T, T) {
+fn check<T: PrimInt + AsPrimitive<usize>>(range: Range<T>, n: T) -> (usize, T, T) {
     let (min, max) = (range.start.min(range.end), range.start.max(range.end));
     let size = abs(max - min);
     if size.is_zero() {
@@ -41,12 +41,12 @@ fn check<T: PrimInt>(range: Range<T>, n: T) -> (T, T, T) {
     if size < n {
         panic!("The required count is greater than the allowed range")
     }
-    (size.min(n), min, max)
+    (n.as_(), min, max)
 }
 
 /// Alias of [`randge_tree`](fn.randge_tree.html)
 #[inline(always)]
-pub fn randge<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
+pub fn randge<T: PrimInt + AsPrimitive<usize>>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
     randge_tree(range, n, rand)
 }
 
@@ -67,7 +67,7 @@ pub fn randge<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> Randge
 /// // output: like [13, -3, -14, 5, 3]
 /// ```
 #[inline]
-pub fn randge_linear<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
+pub fn randge_linear<T: PrimInt + AsPrimitive<usize>>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesLinear<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesLinear::new(min, max);
     RandgeIter::new(len, take, rand)
@@ -89,7 +89,7 @@ pub fn randge_linear<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) ->
 /// // output: like [13, -3, -14, 5, 3]
 /// ```
 #[inline]
-pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
+pub fn randge_tree<T: PrimInt + AsPrimitive<usize>>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesTree<T>> {
     let (len, min, max) = check(range, n);
     let take = RangesTree::new(min, max);
     RandgeIter::new(len, take, rand)
@@ -112,7 +112,7 @@ pub fn randge_tree<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> R
 /// // output: like [13, -3, -14, 5, 3]
 /// ```
 #[inline]
-pub fn randge_barrel<T: PrimInt>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesBarrel<T>>
+pub fn randge_barrel<T: PrimInt + AsPrimitive<usize>>(range: Range<T>, n: T, rand: impl FnRand<T>) -> RandgeIter<T, impl FnRand<T>, RangesBarrel<T>>
 where
     T: AsPrimitive<usize>,
     Range<T>: Iterator<Item = T>,

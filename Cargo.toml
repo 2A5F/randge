@@ -1,6 +1,6 @@
 [package]
 name = "randge"
-version = "1.0.0"
+version = "1.1.0"
 description = "Generate unique random numbers"
 authors = ["2A5F <u2a5f@outlook.com>"]
 edition = "2018"
